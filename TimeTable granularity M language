@@ -1,0 +1,22 @@
+let
+    Source = {0..1439},
+    #"Converted to Table" = Table.FromList(Source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    #"Changed Type" = Table.TransformColumnTypes(#"Converted to Table",{{"Column1", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Column1", "Minutes"}}),
+    #"Inserted Division" = Table.AddColumn(#"Renamed Columns", "Division", each [Minutes] / 1440, type number),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Inserted Division",{{"Division", type time}}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Changed Type1",{{"Division", "Time to the Minute"}}),
+    #"Inserted Integer-Division" = Table.AddColumn(#"Renamed Columns1", "5 Minute Buckets", each Number.IntegerDivide([Minutes], 5), Int64.Type),
+    #"Inserted Integer-Division1" = Table.AddColumn(#"Inserted Integer-Division", "10 Minute Buckets", each Number.IntegerDivide([Minutes], 10), Int64.Type),
+    #"Inserted Integer-Division2" = Table.AddColumn(#"Inserted Integer-Division1", "30 Minute Buckets", each Number.IntegerDivide([Minutes], 30), Int64.Type),
+    #"Inserted Integer-Division3" = Table.AddColumn(#"Inserted Integer-Division2", "1 hour Buckets", each Number.IntegerDivide([Minutes], 60), Int64.Type),
+    #"Added Custom" = Table.AddColumn(#"Inserted Integer-Division3", "5 minute time slot", each [5 Minute Buckets] * 5 / 1440),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Added Custom",{{"5 minute time slot", type time}}),
+    #"Added Custom1" = Table.AddColumn(#"Changed Type2", "10 minute time slot", each [10 Minute Buckets] * 10 / 1440),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Added Custom1",{{"10 minute time slot", type time}}),
+    #"Added Custom2" = Table.AddColumn(#"Changed Type3", "30 minute time slot", each [30 Minute Buckets] * 30 / 1440),
+    #"Changed Type4" = Table.TransformColumnTypes(#"Added Custom2",{{"30 minute time slot", type time}}),
+    #"Added Custom3" = Table.AddColumn(#"Changed Type4", "1 hour time slot", each [1 hour Buckets] * 60 / 1440),
+    #"Changed Type5" = Table.TransformColumnTypes(#"Added Custom3",{{"1 hour time slot", type time}})
+in
+    #"Changed Type5"
